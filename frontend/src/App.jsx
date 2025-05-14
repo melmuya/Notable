@@ -5,6 +5,8 @@ import Dashboard from "./pages/Dashboard";
 import Logout from "./pages/Logout";
 import PrivateRoute from "./components/PrivateRoute";
 import NewNote from "./pages/NewNote";
+import NoteDetail from "./pages/NoteDetail";
+import EditNote from "./pages/EditNote";
 
 function App() {
 
@@ -26,6 +28,20 @@ function App() {
               <PrivateRoute>
                 <NewNote />
               </PrivateRoute>
+            } 
+          />
+            <Route path="/note/:noteId" 
+              element={
+                <PrivateRoute>
+                  <NoteDetail />
+                </PrivateRoute>
+              } 
+            />
+            <Route path="/edit/:noteId" 
+              element={
+                <PrivateRoute>
+                  <EditNote />
+                </PrivateRoute>
             } 
           />
           <Route path="/logout" element={<Logout />} />
