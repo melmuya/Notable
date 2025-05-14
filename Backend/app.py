@@ -22,7 +22,17 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
     jwt.init_app(app)
-    CORS(app)
+
+    @jwt.unauthorized_loader
+    def unauthorized_response(callback):
+        return jsonify({'error': 'Missing or invalid token'}), 401
+
+    @jwt.expired_token_loader
+    def expired_token_callback(jwt_header, jwt_payload):
+        return jsonify({'error': 'Token expired'}), 401
+
+
+    CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}}, supports_credentials=True)
     migrate = Migrate(app, db)
 
     with app.app_context():
