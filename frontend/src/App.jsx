@@ -9,20 +9,21 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Notable</h1>
-      <p>Welcome to your note-taking app!</p>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" 
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          } 
-        />
-        <Route path="/logout" element={<Logout />} />
-      </Routes>
+      <main>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" 
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            } 
+          />
+          <Route path="/logout" element={<Logout />} />
+        </Routes>
+      </main>
+      
       <footer>© 2023 Notable. All rights reserved.</footer>
     </div>
     
