@@ -14,10 +14,10 @@ const Login = () => {
     setError('');
 
     try {
-        const response = await axios.post('http://localhost:5000/api/auth/login', { identifier, password });
+        const response = await axiosInstance.post('/auth/login', { identifier, password });
 
-        const { token } = response.data;
-        localStorage.setItem('token', token);
+        const { access_token } = response.data;
+        localStorage.setItem('token', access_token);
         navigate('/dashboard');
 
 
