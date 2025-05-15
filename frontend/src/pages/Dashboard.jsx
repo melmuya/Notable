@@ -20,6 +20,32 @@ const Dashboard = () => {
         note.content.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const handleUpdateNote = async (e) => {
+        e.preventDefault();
+        try {
+            const updatedNote = {
+                title: editTitle,
+                content: editContent,
+            };
+
+            const response = await axiosInstance.put(`/notes/${selectedNote.id}`, updatedNote);
+
+            // Update the notes state with the updated note
+            setNotes((prevNotes) =>
+                prevNotes.map((note) =>
+                    note.id === selectedNote.id ? response.data : note
+                )
+            );
+
+            // Exit edit mode and update selectedNote
+            setSelectedNote(response.data);
+            setIsEditing(false);
+        } catch (error) {
+            alert("Failed to update the note.");
+            console.error(error);
+        }
+    };
+
 
     useEffect(() => {
         const fetchNotes = async () => {
@@ -64,7 +90,10 @@ const Dashboard = () => {
 
                         <ul className="notes-list">
                             {filteredNotes.map((note) => (
-                                <li key={note.id} className="note-card" onClick={() => setSelectedNote(note)}>
+                                <li key={note.id} className="note-card" onClick={() => {
+                                    setSelectedNote(note);
+                                    setIsEditing(false); // Reset editing state when selecting a note
+                                }}>
                                     <h3>
                                         {note.title}
                                     </h3>
@@ -86,46 +115,28 @@ const Dashboard = () => {
                         )}
 
                         {selectedNote && isEditing && (
-                            <div className="note-edit-form">
+                            <form className="note-edit-form" onSubmit={handleUpdateNote}>
                                 <input
                                     type="text"
                                     value={editTitle}
                                     onChange={(e) => setEditTitle(e.target.value)}
                                     placeholder="Note title"
+                                    required
+                                    autoFocus
                                 />
                                 <textarea
                                     value={editContent}
                                     onChange={(e) => setEditContent(e.target.value)}
                                     placeholder="Note content"
+                                    required
                                 />
                                 <div className="button-group">
-                                    <button
-                                        onClick={async () => {
-                                            try {
-                                                const updated = {
-                                                    title: editTitle,
-                                                    content: editContent
-                                                };
-
-                                                await axiosInstance.put(`/notes/${selectedNote.id}`, updated);
-
-                                                const updatedNotes = notes.map(note =>
-                                                    note.id === selectedNote.id ? { ...note, ...updated } : note
-                                                );
-
-                                                setNotes(updatedNotes);
-                                                setSelectedNote({ ...selectedNote, ...updated });
-                                                setIsEditing(false);
-                                            } catch (err) {
-                                                alert("Failed to update note");
-                                            }
-                                        }}
-                                    >
+                                    <button type='submit'>
                                         Save
                                     </button>
-                                    <button onClick={() => setIsEditing(false)}>Cancel</button>
+                                    <button type='button' onClick={() => setIsEditing(false)}>Cancel</button>
                                 </div>
-                            </div>
+                            </form>
                         )}
 
                         {selectedNote && !isEditing && (
