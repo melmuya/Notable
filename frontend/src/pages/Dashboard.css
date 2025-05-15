@@ -90,3 +90,13 @@
   padding: 2rem;
   overflow-y: auto;
 }
+
+.note-card {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.note-card:hover {
+  background-color: #f1f1f1;
+}
+

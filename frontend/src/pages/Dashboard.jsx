@@ -8,6 +8,7 @@ const Dashboard = () => {
     const [notes, setNotes] = useState([])
     const [error, setError] = useState("")
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedNote, setSelectedNote] = useState(null);
 
     const filteredNotes = notes.filter(note =>
         note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -58,9 +59,9 @@ const Dashboard = () => {
 
                         <ul className="notes-list">
                             {filteredNotes.map((note) => (
-                                <li key={note.id} className="note-card">
+                                <li key={note.id} className="note-card" onClick={() => setSelectedNote(note)}>
                                     <h3>
-                                        <Link to={`/note/${note.id}`}>{note.title}</Link>
+                                        {note.title}
                                     </h3>
                                     <p>
                                         {note.content.length > 100
@@ -72,14 +73,36 @@ const Dashboard = () => {
                         </ul>
                     </aside>
                     <main className="main-content">
-                        <h2>Welcome to Notable</h2>
-                        <p>
-                            This is your personal note-taking app. You can create, edit, and delete notes.
-                            Use the sidebar to navigate through your notes.
-                        </p>
-                        <p>
-                            Click on a note title to view its details or edit it.
-                        </p>
+                        {selectedNote ? (
+                            <div className="note-detail">
+                                <h2>{selectedNote.title}</h2>
+                                <p>{selectedNote.content}</p>
+                                <Link to={`/edit/${selectedNote.id}`}>
+                                    <button className="edit-button">Edit</button>
+                                </Link>
+                                <button
+                                    className="delete-button"
+                                    onClick={async () => {
+                                        try {
+                                            await axiosInstance.delete(`/notes/${selectedNote.id}`)
+                                            setNotes(notes.filter(note => note.id !== selectedNote.id))
+                                            setSelectedNote(null)
+                                        } catch (err) {
+                                            alert("Failed to delete note")
+                                        }
+                                    }}
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        ) : (
+                            <div>
+                                <h2>Welcome to Notable!</h2>
+                                <p>Select a note to view its details or create a new one.</p>
+                            </div>
+                        )}
+
+                        
                     </main>
                 </div>
 
