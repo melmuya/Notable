@@ -5,7 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import Logout from "./pages/Logout";
 import PrivateRoute from "./components/PrivateRoute";
 import NewNote from "./pages/NewNote";
-import NoteDetail from "./pages/NoteDetail";
+// import NoteDetail from "./pages/NoteDetail";
 import EditNote from "./pages/EditNote";
 
 function App() {
