@@ -3,6 +3,8 @@ import Navbar from '../components/Navbar'
 import axiosInstance from '../api/axios'
 import { Link } from 'react-router-dom'
 import './Dashboard.css'
+import Modal from '../components/Modal';
+
 
 const Dashboard = () => {
     const [notes, setNotes] = useState([])
@@ -13,6 +15,10 @@ const Dashboard = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editTitle, setEditTitle] = useState("");
     const [editContent, setEditContent] = useState("");
+
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    const [showCancelEditModal, setShowCancelEditModal] = useState(false);
 
 
     const filteredNotes = notes.filter(note =>
@@ -44,6 +50,38 @@ const Dashboard = () => {
             alert("Failed to update the note.");
             console.error(error);
         }
+    };
+
+    const handleDeleteClick = () => {
+        setShowDeleteModal(true);
+    };
+
+    const cancelDelete = () => {
+        setShowDeleteModal(false);
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await axiosInstance.delete(`/notes/${selectedNote.id}`);
+            setNotes(notes.filter(note => note.id !== selectedNote.id));
+            setSelectedNote(null);
+            setShowDeleteModal(false);
+        } catch (err) {
+            alert("Failed to delete note");
+        }
+    };
+
+    const cancelEdit = () => {
+        setShowCancelEditModal(true);
+    };
+
+    const confirmCancelEdit = () => {
+        setIsEditing(false);
+        setShowCancelEditModal(false);
+    };
+
+    const dismissCancelEdit = () => {
+        setShowCancelEditModal(false);
     };
 
 
@@ -134,7 +172,7 @@ const Dashboard = () => {
                                     <button type='submit'>
                                         Save
                                     </button>
-                                    <button type='button' onClick={() => setIsEditing(false)}>Cancel</button>
+                                    <button type='button' onClick={cancelEdit}>Cancel</button>
                                 </div>
                             </form>
                         )}
@@ -154,24 +192,32 @@ const Dashboard = () => {
                                     >
                                         Edit
                                     </button>
-                                    <button
-                                        className="delete-button"
-                                        onClick={async () => {
-                                            try {
-                                                await axiosInstance.delete(`/notes/${selectedNote.id}`);
-                                                setNotes(notes.filter(note => note.id !== selectedNote.id));
-                                                setSelectedNote(null);
-                                            } catch (err) {
-                                                alert("Failed to delete note");
-                                            }
-                                        }}
-                                    >
+                                    <button className="delete-button" onClick={handleDeleteClick}>
                                         Delete
                                     </button>
+
                                 </div>
                             </div>
                         )}
+                        <Modal
+                            isOpen={showDeleteModal}
+                            title="Delete Note"
+                            message="Are you sure you want to delete this note? This action cannot be undone"
+                            onConfirm={confirmDelete}
+                            onCancel={cancelDelete}
+                        />
                     </main>
+                    {showCancelEditModal && (
+                        <div className="modal-backdrop">
+                            <div className="modal">
+                                <p>Discard your changes?</p>
+                                <div className="modal-buttons">
+                                    <button onClick={confirmCancelEdit}>Yes, discard</button>
+                                    <button onClick={dismissCancelEdit}>No, keep editing</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                 </div>
 
