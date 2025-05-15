@@ -7,6 +7,13 @@ import './Dashboard.css'
 const Dashboard = () => {
   const [notes, setNotes] = useState([])
   const [error, setError] = useState("")
+  const [searchTerm, setSearchTerm] = useState("");
+
+const filteredNotes = notes.filter(note =>
+  note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  note.content.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -32,6 +39,13 @@ const Dashboard = () => {
             + Create Note
           </Link>
         </div>
+        <input
+            type="text"
+            placeholder="Search notes..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="search-input"
+        />
 
         {error && <p style={{ color: 'red' }}>{error}</p>}
         {notes.length === 0 && <p className="notes-info">No notes yet</p>}
@@ -41,7 +55,7 @@ const Dashboard = () => {
         )}
 
         <ul className="notes-list">
-          {notes.map((note) => (
+          {filteredNotes.map((note) => (
             <li key={note.id} className="note-card">
               <h3>
                 <Link to={`/note/${note.id}`}>{note.title}</Link>
