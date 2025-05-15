@@ -6,8 +6,6 @@ import { Link } from 'react-router-dom'
 const Dashboard = () => {
 
     const [notes, setNotes] = useState([])
-    const [title, setTitle] = useState("")
-    const [content, setContent] = useState("")
     const [error, setError] = useState("")
 
     useEffect(() => {
@@ -32,20 +30,32 @@ const Dashboard = () => {
                 Create New Note
             </button>
         </Link>
-        <div style={{ padding: '2rem' }}>
+        <div style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
             <h2>Your notes</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             {notes.length === 0 && <p>No notes yet</p>}
             {notes.length === 1 && <p>you have 1 Note.</p>}
             {notes.length > 1 && <p>You have {notes.length} notes.</p>}
-            <ul>
-            {notes.map(note => (
-                <li key={note.id}>
-                <h3>{note.title}</h3>
-                <p>{note.content}</p>
-                </li>
-            ))}
-            </ul> 
+            <ul style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+                {notes.map(note => (
+                    <li key={note.id} style={{
+                    listStyle: 'none',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    padding: '1rem',
+                    backgroundColor: '#f9f9f9',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                    }}>
+                    <h3>
+                        <Link to={`/note/${note.id}`} style={{ color: '#007bff', textDecoration: 'none' }}>
+                        {note.title}
+                        </Link>
+                    </h3>
+                    <p>{note.content.length > 100 ? note.content.substring(0, 100) + '...' : note.content}</p>
+                    </li>
+                ))}
+            </ul>
+
         </div>
     </>
   )

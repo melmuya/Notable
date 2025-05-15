@@ -31,7 +31,11 @@ const NoteDetail = () => {
       <div style={{ padding: '2rem' }}>
         <h2>{note.title}</h2>
         <p>{note.content}</p>
-        <Link to={`/edit/${note.id}`}>Edit</Link> |{" "}
+        <Link to={`/edit/${note.id}`}>
+            <button>
+                Edit
+            </button>
+        </Link> |{" "}
         <button onClick={async () => {
           try {
             await axiosInstance.delete(`/notes/${note.id}`)
