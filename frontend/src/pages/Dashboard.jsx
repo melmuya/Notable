@@ -1,62 +1,60 @@
-import React, { useEffect, useState} from 'react'
+import React, { useEffect, useState } from 'react'
 import Navbar from '../components/Navbar'
 import axiosInstance from '../api/axios'
 import { Link } from 'react-router-dom'
+import './Dashboard.css'
 
 const Dashboard = () => {
+  const [notes, setNotes] = useState([])
+  const [error, setError] = useState("")
 
-    const [notes, setNotes] = useState([])
-    const [error, setError] = useState("")
+  useEffect(() => {
+    const fetchNotes = async () => {
+      try {
+        const response = await axiosInstance.get("/notes/")
+        setNotes(response.data)
+      } catch (err) {
+        console.error("Failed to fetch notes", err)
+        setError("Failed to load notes")
+      }
+    }
 
-    useEffect(() => {
-        const fetchNotes = async () => {
-            try {
-                const response = await axiosInstance.get("/notes/")
-                setNotes(response.data)
-            } catch (err) {
-                console.error("Failed to fetch notes", err)
-                setError("Failed to load notes")
-            }
-        }
-        
-        fetchNotes()
-    }, [])
+    fetchNotes()
+  }, [])
 
   return (
     <>
-        <Navbar />
-        <Link to="/new-note">
-            <button>
-                Create New Note
-            </button>
-        </Link>
-        <div style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
-            <h2>Your notes</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            {notes.length === 0 && <p>No notes yet</p>}
-            {notes.length === 1 && <p>you have 1 Note.</p>}
-            {notes.length > 1 && <p>You have {notes.length} notes.</p>}
-            <ul style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
-                {notes.map(note => (
-                    <li key={note.id} style={{
-                    listStyle: 'none',
-                    border: '1px solid #ddd',
-                    borderRadius: '8px',
-                    padding: '1rem',
-                    backgroundColor: '#f9f9f9',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-                    }}>
-                    <h3>
-                        <Link to={`/note/${note.id}`} style={{ color: '#007bff', textDecoration: 'none' }}>
-                        {note.title}
-                        </Link>
-                    </h3>
-                    <p>{note.content.length > 100 ? note.content.substring(0, 100) + '...' : note.content}</p>
-                    </li>
-                ))}
-            </ul>
-
+      <Navbar />
+      <div className="dashboard-container">
+        <div className="header-section">
+          <h2>Your Notes</h2>
+          <Link to="/new-note" className="create-note-button">
+            + Create Note
+          </Link>
         </div>
+
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {notes.length === 0 && <p className="notes-info">No notes yet</p>}
+        {notes.length === 1 && <p className="notes-info">You have 1 note.</p>}
+        {notes.length > 1 && (
+          <p className="notes-info">You have {notes.length} notes.</p>
+        )}
+
+        <ul className="notes-list">
+          {notes.map((note) => (
+            <li key={note.id} className="note-card">
+              <h3>
+                <Link to={`/note/${note.id}`}>{note.title}</Link>
+              </h3>
+              <p>
+                {note.content.length > 100
+                  ? note.content.substring(0, 100) + '...'
+                  : note.content}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </div>
     </>
   )
 }
