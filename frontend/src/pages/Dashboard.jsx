@@ -10,6 +10,11 @@ const Dashboard = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedNote, setSelectedNote] = useState(null);
 
+    const [isEditing, setIsEditing] = useState(false);
+    const [editTitle, setEditTitle] = useState("");
+    const [editContent, setEditContent] = useState("");
+
+
     const filteredNotes = notes.filter(note =>
         note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         note.content.toLowerCase().includes(searchTerm.toLowerCase())
@@ -73,37 +78,90 @@ const Dashboard = () => {
                         </ul>
                     </aside>
                     <main className="main-content">
-                        {selectedNote ? (
-                            <div className="note-detail">
-                                <h2>{selectedNote.title}</h2>
-                                <p>{selectedNote.content}</p>
-                                <Link to={`/edit/${selectedNote.id}`}>
-                                    <button className="edit-button">Edit</button>
-                                </Link>
-                                <button
-                                    className="delete-button"
-                                    onClick={async () => {
-                                        try {
-                                            await axiosInstance.delete(`/notes/${selectedNote.id}`)
-                                            setNotes(notes.filter(note => note.id !== selectedNote.id))
-                                            setSelectedNote(null)
-                                        } catch (err) {
-                                            alert("Failed to delete note")
-                                        }
-                                    }}
-                                >
-                                    Delete
-                                </button>
-                            </div>
-                        ) : (
+                        {!selectedNote && (
                             <div>
                                 <h2>Welcome to Notable!</h2>
                                 <p>Select a note to view its details or create a new one.</p>
                             </div>
                         )}
 
-                        
+                        {selectedNote && isEditing && (
+                            <div className="note-edit-form">
+                                <input
+                                    type="text"
+                                    value={editTitle}
+                                    onChange={(e) => setEditTitle(e.target.value)}
+                                    placeholder="Note title"
+                                />
+                                <textarea
+                                    value={editContent}
+                                    onChange={(e) => setEditContent(e.target.value)}
+                                    placeholder="Note content"
+                                />
+                                <div className="button-group">
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                const updated = {
+                                                    title: editTitle,
+                                                    content: editContent
+                                                };
+
+                                                await axiosInstance.put(`/notes/${selectedNote.id}`, updated);
+
+                                                const updatedNotes = notes.map(note =>
+                                                    note.id === selectedNote.id ? { ...note, ...updated } : note
+                                                );
+
+                                                setNotes(updatedNotes);
+                                                setSelectedNote({ ...selectedNote, ...updated });
+                                                setIsEditing(false);
+                                            } catch (err) {
+                                                alert("Failed to update note");
+                                            }
+                                        }}
+                                    >
+                                        Save
+                                    </button>
+                                    <button onClick={() => setIsEditing(false)}>Cancel</button>
+                                </div>
+                            </div>
+                        )}
+
+                        {selectedNote && !isEditing && (
+                            <div className="note-detail">
+                                <h2>{selectedNote.title}</h2>
+                                <p>{selectedNote.content}</p>
+                                <div className="button-group">
+                                    <button
+                                        className="edit-button"
+                                        onClick={() => {
+                                            setEditTitle(selectedNote.title);
+                                            setEditContent(selectedNote.content);
+                                            setIsEditing(true);
+                                        }}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        className="delete-button"
+                                        onClick={async () => {
+                                            try {
+                                                await axiosInstance.delete(`/notes/${selectedNote.id}`);
+                                                setNotes(notes.filter(note => note.id !== selectedNote.id));
+                                                setSelectedNote(null);
+                                            } catch (err) {
+                                                alert("Failed to delete note");
+                                            }
+                                        }}
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </main>
+
                 </div>
 
 

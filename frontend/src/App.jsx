@@ -30,13 +30,13 @@ function App() {
               </PrivateRoute>
             } 
           />
-            <Route path="/note/:noteId" 
+            {/* <Route path="/note/:noteId" 
               element={
                 <PrivateRoute>
                   <NoteDetail />
                 </PrivateRoute>
               } 
-            />
+            /> */}
             <Route path="/edit/:noteId" 
               element={
                 <PrivateRoute>
