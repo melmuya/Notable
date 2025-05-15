@@ -70,3 +70,23 @@
   border: 1px solid #ddd;
   border-radius: 8px;
 }
+
+.main-layout {
+  display: flex;
+  height: calc(100vh - 60px); /* assuming Navbar is ~60px tall */
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 300px;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
