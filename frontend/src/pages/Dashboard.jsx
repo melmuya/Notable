@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import Navbar from '../components/Navbar'
 import axiosInstance from '../api/axios'
 import { Link } from 'react-router-dom'
 import './Dashboard.css'
 import Modal from '../components/Modal';
+import QuillEditor from '../components/QuillEditor'
 
 
 const Dashboard = () => {
@@ -17,7 +18,6 @@ const Dashboard = () => {
     const [editContent, setEditContent] = useState("");
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-
     const [showCancelEditModal, setShowCancelEditModal] = useState(false);
 
 
@@ -29,23 +29,48 @@ const Dashboard = () => {
     const handleUpdateNote = async (e) => {
         e.preventDefault();
         try {
+            // Create the updated note object
             const updatedNote = {
                 title: editTitle,
                 content: editContent,
             };
 
+            // Make the API call
             const response = await axiosInstance.put(`/notes/${selectedNote.id}`, updatedNote);
+            
+            // Create a local updated note object with our form values to ensure consistency
+            const updatedNoteData = {
+                ...selectedNote, // Keep other properties like id
+                title: editTitle,
+                content: editContent
+            };
 
-            // Update the notes state with the updated note
-            setNotes((prevNotes) =>
-                prevNotes.map((note) =>
-                    note.id === selectedNote.id ? response.data : note
-                )
-            );
-
-            // Exit edit mode and update selectedNote
-            setSelectedNote(response.data);
+            console.log("Note updated with content:", updatedNoteData.content);
+            
+            // Force React to see this as a new array by creating a completely new reference
+            const updatedNotes = [...notes].map(note => {
+                if (note.id === selectedNote.id) {
+                    // Create a brand new object to break reference equality
+                    return JSON.parse(JSON.stringify(updatedNoteData));
+                }
+                return note;
+            });
+            
+            // Exit edit mode first to avoid any state update conflicts
             setIsEditing(false);
+            
+            // Update selected note with a new object reference
+            setSelectedNote({...updatedNoteData});
+            
+            // Then update the whole notes array
+            setNotes(updatedNotes);
+            
+            // Force re-render after a short delay
+            setTimeout(() => {
+                console.log("Forcing re-render");
+                setNotes([...updatedNotes]);
+            }, 50);
+            
         } catch (error) {
             alert("Failed to update the note.");
             console.error(error);
@@ -85,6 +110,48 @@ const Dashboard = () => {
     };
 
 
+    // Function to force re-rendering of notes
+    const forceUpdate = useCallback(() => {
+        setNotes(prevNotes => [...prevNotes]);
+    }, []);
+    
+    // Add escape key listener to cancel editing
+    useEffect(() => {
+        const handleEscapeKey = (e) => {
+            if (e.key === 'Escape' && isEditing) {
+                setShowCancelEditModal(true);
+            }
+        };
+        
+        window.addEventListener('keydown', handleEscapeKey);
+        
+        return () => {
+            window.removeEventListener('keydown', handleEscapeKey);
+        };
+    }, [isEditing]);
+
+    // Add some basic styling for selected note
+    useEffect(() => {
+        // Add CSS for selected note if not already present
+        const styleId = 'note-selection-style';
+        if (!document.getElementById(styleId)) {
+            const style = document.createElement('style');
+            style.id = styleId;
+            style.innerHTML = `
+                .note-card.selected {
+                    background-color: #e9f5ff;
+                    border-left: 3px solid #0078d4;
+                }
+                
+                /* For debugging - add a red border to help see content updates */
+                .debug-border {
+                    border: 1px solid red;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }, []);
+
     useEffect(() => {
         const fetchNotes = async () => {
             try {
@@ -98,6 +165,17 @@ const Dashboard = () => {
 
         fetchNotes()
     }, [])
+
+    // Function to safely render HTML content
+    const renderHtmlContent = (htmlContent) => {
+        return { __html: htmlContent || '' };
+    };
+    
+    // Helper function to strip HTML tags from content
+    const stripHtmlTags = (html) => {
+        if (!html) return '';
+        return html.replace(/<[^>]*>/g, '');
+    };
 
     return (
         <>
@@ -127,21 +205,32 @@ const Dashboard = () => {
                         )}
 
                         <ul className="notes-list">
-                            {filteredNotes.map((note) => (
-                                <li key={note.id} className="note-card" onClick={() => {
-                                    setSelectedNote(note);
-                                    setIsEditing(false); // Reset editing state when selecting a note
-                                }}>
-                                    <h3>
-                                        {note.title}
-                                    </h3>
-                                    <p>
-                                        {note.content.length > 100
-                                            ? note.content.substring(0, 100) + '...'
-                                            : note.content}
-                                    </p>
-                                </li>
-                            ))}
+                            {filteredNotes.map((note) => {
+                                // Strip HTML tags for display in sidebar
+                                const plainTextContent = stripHtmlTags(note.content);
+                                const previewText = plainTextContent.length > 100 
+                                    ? plainTextContent.substring(0, 100) + '...' 
+                                    : plainTextContent;
+                                
+                                return (
+                                    <li 
+                                        key={note.id} 
+                                        className={`note-card ${selectedNote && selectedNote.id === note.id ? 'selected' : ''}`}
+                                        onClick={() => {
+                                            console.log("Selected note content:", note.content);
+                                            setSelectedNote({...note}); // Create new reference
+                                            setIsEditing(false);
+                                        }}
+                                    >
+                                        <h3>
+                                            {note.title}
+                                        </h3>
+                                        <p>
+                                            {previewText}
+                                        </p>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </aside>
                     <main className="main-content">
@@ -162,11 +251,15 @@ const Dashboard = () => {
                                     required
                                     autoFocus
                                 />
-                                <textarea
-                                    value={editContent}
-                                    onChange={(e) => setEditContent(e.target.value)}
+                                <QuillEditor
+                                    value={editContent || ""}
+                                    onChange={(content) => {
+                                        console.log("Content changed to:", content);
+                                        setEditContent(content);
+                                    }}
                                     placeholder="Note content"
-                                    required
+                                    outputFormat="html"
+                                    toolbar="standard"
                                 />
                                 <div className="button-group">
                                     <button type='submit'>
@@ -180,11 +273,15 @@ const Dashboard = () => {
                         {selectedNote && !isEditing && (
                             <div className="note-detail">
                                 <h2>{selectedNote.title}</h2>
-                                <p>{selectedNote.content}</p>
+                                <div 
+                                    dangerouslySetInnerHTML={renderHtmlContent(selectedNote.content)} 
+                                    className="note-content"
+                                />
                                 <div className="button-group">
                                     <button
                                         className="edit-button"
                                         onClick={() => {
+                                            // Ensure we have the latest content before editing
                                             setEditTitle(selectedNote.title);
                                             setEditContent(selectedNote.content);
                                             setIsEditing(true);
@@ -195,7 +292,6 @@ const Dashboard = () => {
                                     <button className="delete-button" onClick={handleDeleteClick}>
                                         Delete
                                     </button>
-
                                 </div>
                             </div>
                         )}
