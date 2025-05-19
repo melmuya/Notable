@@ -11,10 +11,10 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
-      <h2 className="navbar-brand">Notable</h2>
+      <Link to="/dashboard" className="navbar-brand">Notable</Link>
       <div className="navbar-links">
-        {/* <Link to="/dashboard" className="navbar-link">Dashboard</Link>
-        <Link to="/notes" className="navbar-link">My Notes</Link> */}
+        <Link to="/dashboard" className="navbar-link">Dashboard</Link>
+        <Link to="/new-note" className="navbar-link">New Note</Link>
         <button onClick={handleLogout} className="navbar-button">Logout</button>
       </div>
     </nav>

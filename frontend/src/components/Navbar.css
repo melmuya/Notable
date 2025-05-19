@@ -1,24 +1,36 @@
-/* Navbar.css */
+/* Navbar.css - Modern redesign */
 
 .navbar {
   padding: 1rem 2rem;
-  background-color: #1f2937; /* dark gray-blue */
+  background: linear-gradient(90deg, #3a0ca3 0%, #4361ee 100%);
   color: #ffffff;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .navbar-brand {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.8rem;
+  font-weight: 700;
   color: #ffffff;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand::before {
+  content: "📝";
+  margin-right: 10px;
+  font-size: 1.5rem;
 }
 
 .navbar-links {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   align-items: center;
 }
 
@@ -26,24 +38,40 @@
   color: #ffffff;
   text-decoration: none;
   padding: 0.5rem 0.75rem;
-  transition: background-color 0.2s ease;
-  border-radius: 4px;
+  transition: all 0.2s ease;
+  border-radius: 6px;
+  font-weight: 500;
 }
 
 .navbar-link:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .navbar-button {
-  background-color: #ef4444; /* red */
+  background-color: #ffffff;
   border: none;
-  color: white;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
+  color: #4361ee;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .navbar-button:hover {
-  background-color: #dc2626;
+  background-color: #f8f9fa;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 1rem;
+  }
+  
+  .navbar-brand {
+    font-size: 1.5rem;
+  }
 }

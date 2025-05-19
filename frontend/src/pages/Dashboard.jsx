@@ -4,8 +4,8 @@ import axiosInstance from '../api/axios'
 import { Link } from 'react-router-dom'
 import './Dashboard.css'
 import Modal from '../components/Modal';
+import SaveConfirmationModal from '../components/SaveConfirmationModal';
 import QuillEditor from '../components/QuillEditor'
-
 
 const Dashboard = () => {
     const [notes, setNotes] = useState([])
@@ -16,18 +16,29 @@ const Dashboard = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editTitle, setEditTitle] = useState("");
     const [editContent, setEditContent] = useState("");
+    const [hasChanges, setHasChanges] = useState(false);
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showCancelEditModal, setShowCancelEditModal] = useState(false);
-
+    const [showSaveModal, setShowSaveModal] = useState(false);
 
     const filteredNotes = notes.filter(note =>
         note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         note.content.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // Track if edits have been made
+    useEffect(() => {
+        if (selectedNote && isEditing) {
+            setHasChanges(
+                editTitle !== selectedNote.title || 
+                editContent !== selectedNote.content
+            );
+        }
+    }, [editTitle, editContent, selectedNote, isEditing]);
+
     const handleUpdateNote = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         try {
             // Create the updated note object
             const updatedNote = {
@@ -65,6 +76,12 @@ const Dashboard = () => {
             // Then update the whole notes array
             setNotes(updatedNotes);
             
+            // Reset changes flag
+            setHasChanges(false);
+            
+            // Close save modal if it was open
+            setShowSaveModal(false);
+            
             // Force re-render after a short delay
             setTimeout(() => {
                 console.log("Forcing re-render");
@@ -97,18 +114,41 @@ const Dashboard = () => {
     };
 
     const cancelEdit = () => {
-        setShowCancelEditModal(true);
+        // Show the appropriate modal based on whether changes were made
+        if (hasChanges) {
+            setShowCancelEditModal(true);
+        } else {
+            confirmCancelEdit();
+        }
     };
 
     const confirmCancelEdit = () => {
         setIsEditing(false);
         setShowCancelEditModal(false);
+        setHasChanges(false);
     };
 
     const dismissCancelEdit = () => {
         setShowCancelEditModal(false);
     };
 
+    // New save confirmation handlers
+    const handleSaveClick = (e) => {
+        e.preventDefault();
+        if (hasChanges) {
+            setShowSaveModal(true);
+        } else {
+            setIsEditing(false);
+        }
+    };
+
+    const confirmSave = () => {
+        handleUpdateNote();
+    };
+
+    const dismissSave = () => {
+        setShowSaveModal(false);
+    };
 
     // Function to force re-rendering of notes
     const forceUpdate = useCallback(() => {
@@ -119,7 +159,11 @@ const Dashboard = () => {
     useEffect(() => {
         const handleEscapeKey = (e) => {
             if (e.key === 'Escape' && isEditing) {
-                setShowCancelEditModal(true);
+                if (hasChanges) {
+                    setShowCancelEditModal(true);
+                } else {
+                    setIsEditing(false);
+                }
             }
         };
         
@@ -128,29 +172,24 @@ const Dashboard = () => {
         return () => {
             window.removeEventListener('keydown', handleEscapeKey);
         };
-    }, [isEditing]);
+    }, [isEditing, hasChanges]);
 
-    // Add some basic styling for selected note
+    // Add navigation warning for unsaved changes
     useEffect(() => {
-        // Add CSS for selected note if not already present
-        const styleId = 'note-selection-style';
-        if (!document.getElementById(styleId)) {
-            const style = document.createElement('style');
-            style.id = styleId;
-            style.innerHTML = `
-                .note-card.selected {
-                    background-color: #e9f5ff;
-                    border-left: 3px solid #0078d4;
-                }
-                
-                /* For debugging - add a red border to help see content updates */
-                .debug-border {
-                    border: 1px solid red;
-                }
-            `;
-            document.head.appendChild(style);
-        }
-    }, []);
+        const handleBeforeUnload = (e) => {
+            if (isEditing && hasChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        };
+        
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [isEditing, hasChanges]);
 
     useEffect(() => {
         const fetchNotes = async () => {
@@ -177,6 +216,17 @@ const Dashboard = () => {
         return html.replace(/<[^>]*>/g, '');
     };
 
+    // Function to format the date from the creation timestamp
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric',
+            year: 'numeric'
+        });
+    };
+
     return (
         <>
             <Navbar />
@@ -186,7 +236,7 @@ const Dashboard = () => {
                         <div className="header-section">
                             <h2>Your Notes</h2>
                             <Link to="/new-note" className="create-note-button">
-                                + Create Note
+                                Create Note
                             </Link>
                         </div>
                         <input
@@ -197,12 +247,13 @@ const Dashboard = () => {
                             className="search-input"
                         />
 
-                        {error && <p style={{ color: 'red' }}>{error}</p>}
-                        {notes.length === 0 && <p className="notes-info">No notes yet</p>}
-                        {notes.length === 1 && <p className="notes-info">You have 1 note.</p>}
-                        {notes.length > 1 && (
-                            <p className="notes-info">You have {notes.length} notes.</p>
-                        )}
+                        {error && <p style={{ color: 'red', padding: '0 1.5rem' }}>{error}</p>}
+                        
+                        <p className="notes-info">
+                            {notes.length === 0 && "No notes yet"}
+                            {notes.length === 1 && "You have 1 note"}
+                            {notes.length > 1 && `You have ${notes.length} notes`}
+                        </p>
 
                         <ul className="notes-list">
                             {filteredNotes.map((note) => {
@@ -217,17 +268,18 @@ const Dashboard = () => {
                                         key={note.id} 
                                         className={`note-card ${selectedNote && selectedNote.id === note.id ? 'selected' : ''}`}
                                         onClick={() => {
-                                            console.log("Selected note content:", note.content);
-                                            setSelectedNote({...note}); // Create new reference
-                                            setIsEditing(false);
+                                            if (isEditing && hasChanges) {
+                                                setShowSaveModal(true);
+                                                // Store note to switch to after handling save
+                                                sessionStorage.setItem('pendingNoteId', note.id);
+                                            } else {
+                                                setSelectedNote({...note}); // Create new reference
+                                                setIsEditing(false);
+                                            }
                                         }}
                                     >
-                                        <h3>
-                                            {note.title}
-                                        </h3>
-                                        <p>
-                                            {previewText}
-                                        </p>
+                                        <h3>{note.title}</h3>
+                                        <p>{previewText}</p>
                                     </li>
                                 );
                             })}
@@ -242,7 +294,7 @@ const Dashboard = () => {
                         )}
 
                         {selectedNote && isEditing && (
-                            <form className="note-edit-form" onSubmit={handleUpdateNote}>
+                            <form className="note-edit-form" onSubmit={handleSaveClick}>
                                 <input
                                     type="text"
                                     value={editTitle}
@@ -254,7 +306,6 @@ const Dashboard = () => {
                                 <QuillEditor
                                     value={editContent || ""}
                                     onChange={(content) => {
-                                        console.log("Content changed to:", content);
                                         setEditContent(content);
                                     }}
                                     placeholder="Note content"
@@ -262,10 +313,12 @@ const Dashboard = () => {
                                     toolbar="standard"
                                 />
                                 <div className="button-group">
-                                    <button type='submit'>
-                                        Save
+                                    <button type='submit' className="edit-button">
+                                        Save Changes
                                     </button>
-                                    <button type='button' onClick={cancelEdit}>Cancel</button>
+                                    <button type='button' className="delete-button" onClick={cancelEdit}>
+                                        Cancel
+                                    </button>
                                 </div>
                             </form>
                         )}
@@ -298,26 +351,48 @@ const Dashboard = () => {
                         <Modal
                             isOpen={showDeleteModal}
                             title="Delete Note"
-                            message="Are you sure you want to delete this note? This action cannot be undone"
+                            message="Are you sure you want to delete this note? This action cannot be undone."
                             onConfirm={confirmDelete}
                             onCancel={cancelDelete}
                         />
                     </main>
-                    {showCancelEditModal && (
-                        <div className="modal-backdrop">
-                            <div className="modal">
-                                <p>Discard your changes?</p>
-                                <div className="modal-buttons">
-                                    <button onClick={confirmCancelEdit}>Yes, discard</button>
-                                    <button onClick={dismissCancelEdit}>No, keep editing</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
                 </div>
 
+                {/* Cancel Edit Modal */}
+                {showCancelEditModal && (
+                    <div className="modal-backdrop">
+                        <div className="modal">
+                            <p>Discard your changes?</p>
+                            <div className="modal-buttons">
+                                <button onClick={confirmCancelEdit}>Yes, discard</button>
+                                <button onClick={dismissCancelEdit}>No, keep editing</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
+                {/* Save Confirmation Modal */}
+                <SaveConfirmationModal 
+                    isOpen={showSaveModal}
+                    onSave={confirmSave}
+                    onDiscard={() => {
+                        // Check if there's a pending note to switch to
+                        const pendingNoteId = sessionStorage.getItem('pendingNoteId');
+                        if (pendingNoteId) {
+                            // Find the note in our list
+                            const noteToSelect = notes.find(note => note.id === pendingNoteId);
+                            if (noteToSelect) {
+                                setSelectedNote({...noteToSelect});
+                            }
+                            // Clear storage
+                            sessionStorage.removeItem('pendingNoteId');
+                        }
+                        // Reset editing state
+                        setIsEditing(false);
+                        setHasChanges(false);
+                        setShowSaveModal(false);
+                    }}
+                />
             </div>
         </>
     )
