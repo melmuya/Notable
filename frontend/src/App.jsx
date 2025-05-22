@@ -2,11 +2,11 @@ import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import Logout from "./pages/Logout";
+// import Logout from "./pages/Logout";
 import PrivateRoute from "./components/PrivateRoute";
 import NewNote from "./pages/NewNote";
 // import NoteDetail from "./pages/NoteDetail";
-import EditNote from "./pages/EditNote";
+// import EditNote from "./pages/EditNote";
 
 function App() {
 
@@ -37,14 +37,14 @@ function App() {
                 </PrivateRoute>
               } 
             /> */}
-            <Route path="/edit/:noteId" 
+            {/* <Route path="/edit/:noteId" 
               element={
                 <PrivateRoute>
                   <EditNote />
                 </PrivateRoute>
             } 
-          />
-          <Route path="/logout" element={<Logout />} />
+          /> */}
+          {/* <Route path="/logout" element={<Logout />} /> */}
         </Routes>
       </main>
       
