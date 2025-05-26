@@ -48,7 +48,7 @@ function App() {
         </Routes>
       </main>
       
-      <footer>© 2023 Notable. All rights reserved.</footer>
+      {/* <footer>© 2023 Notable. All rights reserved.</footer> */}
     </div>
     
   )
