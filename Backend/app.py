@@ -12,7 +12,7 @@ def create_app():
     app = Flask(__name__)
 
     # Basic configuration
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'super-secret-key'
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') 
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///notes.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY') or 'jwt-secret-key'
@@ -52,7 +52,9 @@ def create_app():
 
     return app
 
+# Create app instance for Gunicorn
+app = create_app()
+
 # Run the app
 if __name__ == '__main__':
-    app = create_app()
     app.run(debug=True)
