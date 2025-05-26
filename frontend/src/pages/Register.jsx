@@ -37,7 +37,7 @@ const Register = () => {
             
             // Redirect after showing success message
             setTimeout(() => {
-                navigate('/login')
+                navigate('/')
             }, 2000)
 
         } catch (err) {
