@@ -34,7 +34,14 @@ def create_app():
         return jsonify({'error': 'Token expired'}), 401
 
 
-    CORS(app, resources={r"/api/*": {"origins": "https://notable-phi.vercel.app/"}}, supports_credentials=True)
+    # Improved CORS configuration
+    CORS(
+        app,
+        origins=["https://notable-phi.vercel.app"],
+        supports_credentials=True,
+        allow_headers=["Content-Type", "Authorization"],
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    )
     migrate = Migrate(app, db)
 
     with app.app_context():
