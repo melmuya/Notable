@@ -8,16 +8,18 @@ from extensions import db, jwt
 
 from datetime import timedelta
 
+from dotenv import load_dotenv
+load_dotenv()
+
 def create_app():
     app = Flask(__name__)
 
     # Basic configuration
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') 
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///notes.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY') or 'jwt-secret-key'
-    app.config['JWT_ACCESSS_TOKEN_EXPIRES'] = timedelta(hours=3)
-    app.config['DEBUG'] = True
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+    app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY') 
+    
+    # app.config['DEBUG'] = True
 
     # Initialize extensions
     db.init_app(app)
@@ -32,7 +34,7 @@ def create_app():
         return jsonify({'error': 'Token expired'}), 401
 
 
-    CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}}, supports_credentials=True)
+    CORS(app, resources={r"/api/*": {"origins": "https://notable-phi.vercel.app/"}}, supports_credentials=True)
     migrate = Migrate(app, db)
 
     with app.app_context():
