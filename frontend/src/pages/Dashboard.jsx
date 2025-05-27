@@ -198,13 +198,22 @@ const Dashboard = () => {
                 setNotes(Array.isArray(response.data) ? response.data : [])
                 setError("")
             } catch (err) {
-                if (err.response && err.response.status === 401) {
-                    setError("You are not logged in. Please log in to view your notes.");
-                    // Optionally, redirect to login page here
-                    // navigate('/login');
+                // Enhanced error logging for debugging
+                if (err.response) {
+                    console.error("Failed to fetch notes", err.response.status, err.response.data)
+                    if (err.response.status === 401) {
+                        setError("You are not logged in. Please log in to view your notes.");
+                        // Optionally, redirect to login page here
+                        navigate('/');
+                    } else {
+                        setError(`Failed to load notes (Error ${err.response.status})`)
+                    }
+                } else if (err.request) {
+                    console.error("No response received when fetching notes", err.request)
+                    setError("No response from server. Please check your connection.")
                 } else {
-                    console.error("Failed to fetch notes", err)
-                    setError("Failed to load notes")
+                    console.error("Error setting up request to fetch notes", err.message)
+                    setError("Unexpected error occurred while loading notes.")
                 }
             }
         }
