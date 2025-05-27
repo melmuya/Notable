@@ -194,7 +194,7 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchNotes = async () => {
             try {
-                const response = await axiosInstance.get("/notes/")
+                const response = await axiosInstance.get("/api/notes/")
                 setNotes(Array.isArray(response.data) ? response.data : [])
                 setError("")
             } catch (err) {
