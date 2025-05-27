@@ -32,7 +32,7 @@ const NewNote = () => {
     }
 
     try {
-      await axiosInstance.post("/notes/", { title: title.trim(), content })
+      await axiosInstance.post("/api/notes/", { title: title.trim(), content })
       setSuccess("Note created successfully! Redirecting...")
       
       // Clear form and redirect

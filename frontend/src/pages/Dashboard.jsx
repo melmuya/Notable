@@ -47,7 +47,7 @@ const Dashboard = () => {
             };
 
             // Make the API call
-            const response = await axiosInstance.put(`/notes/${selectedNote.id}`, updatedNote);
+            const response = await axiosInstance.put(`/api/notes/${selectedNote.id}`, updatedNote);
             
             // Create a local updated note object with our form values to ensure consistency
             const updatedNoteData = {
@@ -104,7 +104,7 @@ const Dashboard = () => {
 
     const confirmDelete = async () => {
         try {
-            await axiosInstance.delete(`/notes/${selectedNote.id}`);
+            await axiosInstance.delete(`/api/notes/${selectedNote.id}`);
             setNotes(notes.filter(note => note.id !== selectedNote.id));
             setSelectedNote(null);
             setShowDeleteModal(false);
