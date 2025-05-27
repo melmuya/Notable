@@ -195,10 +195,17 @@ const Dashboard = () => {
         const fetchNotes = async () => {
             try {
                 const response = await axiosInstance.get("/notes/")
-                setNotes(response.data)
+                setNotes(Array.isArray(response.data) ? response.data : [])
+                setError("")
             } catch (err) {
-                console.error("Failed to fetch notes", err)
-                setError("Failed to load notes")
+                if (err.response && err.response.status === 401) {
+                    setError("You are not logged in. Please log in to view your notes.");
+                    // Optionally, redirect to login page here
+                    // navigate('/login');
+                } else {
+                    console.error("Failed to fetch notes", err)
+                    setError("Failed to load notes")
+                }
             }
         }
 
