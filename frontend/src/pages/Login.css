@@ -7,7 +7,8 @@
   align-items: center;
   justify-content: center;
   font-family: 'Inter', 'Segoe UI', sans-serif;
-  padding: 1rem;
+  margin: 0;
+  padding: 0;
 }
 
 .login-card {

@@ -2,11 +2,9 @@ import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-// import Logout from "./pages/Logout";
 import PrivateRoute from "./components/PrivateRoute";
 import NewNote from "./pages/NewNote";
-// import NoteDetail from "./pages/NoteDetail";
-// import EditNote from "./pages/EditNote";
+import "./App.css";
 
 function App() {
 
