@@ -19,4 +19,16 @@ axiosInstance.interceptors.request.use(
     }
 )
 
+// Add a response interceptor to handle 401 errors globally
+axiosInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem('token');
+            window.location.href = '/'; // Redirect to login
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default axiosInstance;
