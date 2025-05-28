@@ -45,6 +45,10 @@ def create_app():
     )
     migrate = Migrate(app, db)
 
+    @app.route('/ping')
+    def ping():
+        return jsonify({'message': 'pong'})
+
     with app.app_context():
 
         # Import models here to avoid circular imports (after db is initialized)
