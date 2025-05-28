@@ -38,7 +38,7 @@ def create_app():
     # Improved CORS configuration
     CORS(
         app,
-        origins=["https://notable-phi.vercel.app"],
+        origins=["https://notable-phi.vercel.app", "http://localhost:5173"],
         supports_credentials=True,
         allow_headers=["Content-Type", "Authorization"],
         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
