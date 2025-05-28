@@ -252,7 +252,7 @@ const Dashboard = () => {
                         <div className="header-section">
                             <h2>Your Notes</h2>
                             <Link to="/new-note" className="create-note-button">
-                                Create Note
+                                
                             </Link>
                         </div>
                         <input
