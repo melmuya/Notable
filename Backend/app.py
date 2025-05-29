@@ -45,10 +45,6 @@ def create_app():
     )
     migrate = Migrate(app, db)
 
-    @app.route('/ping')
-    def ping():
-        return jsonify({'message': 'pong'})
-
     with app.app_context():
 
         # Import models here to avoid circular imports (after db is initialized)
@@ -63,6 +59,10 @@ def create_app():
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(notes_bp, url_prefix='/api/notes')
+
+    @app.route('/ping')
+    def ping():
+        return jsonify({'message': 'pong'})
 
     return app
 
